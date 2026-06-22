@@ -54,7 +54,7 @@
 curl -fsSL https://pi.dev/install.sh | sh        # Windows: irm https://pi.dev/install.ps1 | iex
 
 # 2) 저장소 클론 & 의존성 설치
-git clone https://github.com/<your-id>/pi-flag-coach.git
+git clone https://github.com/yonseiaie/pi-flag-coach.git
 cd pi-flag-coach
 npm install                      # 브리지 서버(express)
 (cd extensions && npm install)   # Extension 의존성(typebox)
@@ -126,7 +126,7 @@ pi -e extensions/flag-tools.ts --skill skills/analyze-defense -c -p "방금 추�
         │  spawn pi -p ...  (에이전트 깨우기)
         ▼
 [Pi 에이전트 코어] ── AGENTS.md 지침
-   ├─ Skills:      player-stats / analyze-defense / training-planner
+   ├─ Skills:      player-stats / analyze-defense / training-planner / play-review
    ├─ Extensions:  flag-tools(도구) · tactical-monitor(실시간 주입+위젯)
    ├─ MCP:         stats-db(sqlite/postgres) · team-store(filesystem)
    └─ Subagents:   defense-analyst ∥ offense-strategist
