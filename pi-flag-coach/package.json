@@ -1,0 +1,16 @@
+{
+  "name": "pi-flag-coach",
+  "version": "1.0.0",
+  "description": "Pi 하니스 기반 플래그풋볼 실시간 전술 코칭 & 팀 관리 AI 에이전트 (Skill + Extension + MCP + Web UI)",
+  "type": "module",
+  "scripts": {
+    "bridge": "node server/bridge.mjs",
+    "web": "node server/bridge.mjs",
+    "agent": "pi -e extensions/flag-tools.ts -e extensions/tactical-monitor.ts --skill skills/player-stats --skill skills/analyze-defense --skill skills/training-planner --skill skills/play-review",
+    "agent:print": "pi -e extensions/flag-tools.ts -e extensions/tactical-monitor.ts --skill skills/analyze-defense -p"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

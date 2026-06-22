@@ -2,24 +2,78 @@
   "formation": "SPREAD FLEX",
   "plays": [
     {
-      "id": "PLAY01", "name": "Mesh Switch", "type": "pass",
+      "id": "PLAY01",
+      "name": "Mesh Switch",
+      "type": "pass",
       "desc": "X/F 미드필드 크로스 메시, Y 딥 클리어아웃. 블리츠 대응 핫 루트 내장.",
-      "bestAgainst": ["high-blitz", "man-coverage"],
+      "bestAgainst": [
+        "high-blitz",
+        "man-coverage"
+      ],
       "routes": {
-        "X": "drag-out", "F": "deep-cross", "Y": "go", "Z": "comeback", "H": "flat", "Q": "rollout"
+        "X": "drag-out",
+        "F": "deep-cross",
+        "Y": "go",
+        "Z": "comeback",
+        "H": "flat",
+        "Q": "rollout"
       }
     },
-    { "id": "PLAY02", "name": "Stick N Nod", "type": "pass",
+    {
+      "id": "PLAY02",
+      "name": "Stick N Nod",
+      "type": "pass",
       "desc": "Z 스틱 후 노드로 세이프티 속임. 짧은 미드 존 공략.",
-      "bestAgainst": ["zone-coverage"], "routes": {} },
-    { "id": "PLAY03", "name": "Double In", "type": "pass",
+      "bestAgainst": [
+        "zone-coverage"
+      ],
+      "routes": {}
+    },
+    {
+      "id": "PLAY03",
+      "name": "Double In",
+      "type": "pass",
       "desc": "X·Y 동시 인컷으로 미드필드 과부하.",
-      "bestAgainst": ["soft-flat"], "routes": {} },
-    { "id": "PLAY04", "name": "Bunch Cross", "type": "pass",
+      "bestAgainst": [
+        "soft-flat"
+      ],
+      "routes": {}
+    },
+    {
+      "id": "PLAY04",
+      "name": "Bunch Cross",
+      "type": "pass",
       "desc": "번치 셋에서 교차 루트로 픽 유도.",
-      "bestAgainst": ["man-coverage"], "routes": {} },
-    { "id": "PLAY05", "name": "Redzone Fade", "type": "pass",
+      "bestAgainst": [
+        "man-coverage"
+      ],
+      "routes": {}
+    },
+    {
+      "id": "PLAY05",
+      "name": "Redzone Fade",
+      "type": "pass",
       "desc": "레드존 코너 페이드. 1:1 매치업 활용.",
-      "bestAgainst": ["press-man"], "routes": {} }
+      "bestAgainst": [
+        "press-man"
+      ],
+      "routes": {}
+    },
+    {
+      "id": "PLAY06",
+      "name": "Cross",
+      "type": "pass",
+      "desc": "SPREAD 포메이션에서의 패스 플레이로, 외곽 와이드와 슬롯을 활용하여 깊은 패스를 시도하는 구성.",
+      "bestAgainst": [],
+      "routes": {}
+    },
+    {
+      "id": "PLAY07",
+      "name": "X motion Corner",
+      "type": "pass",
+      "desc": "SPREAD 포메이션에서 외곽 와이드 리시버 X가 13야드 코너로 이동하고, 슬롯 Y가 10야드로 이동. 쿼터백은 패스를 준비한다.",
+      "bestAgainst": [],
+      "routes": {}
+    }
   ]
 }

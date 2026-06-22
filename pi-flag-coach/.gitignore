@@ -1,0 +1,12 @@
+node_modules/
+.pi/git/
+.pi/npm/
+.pi/sessions/
+*.log
+.env
+.DS_Store
+
+# 실행 산출물 (에이전트가 생성)
+data/generated/
+training-plans/
+coaching-reports/
