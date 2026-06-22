@@ -117,33 +117,15 @@
         <div class="tool" data-mode="erase" onclick="setMode('erase')">⌫ 지우기 <small>라우트</small></div>
         <div class="group">
           <div class="lbl">얼라인 (포메이션)</div>
-          <select id="align" onchange="applyAlign()">
-            <option value="">선택…</option>
-            <option value="spread">Spread (기본)</option>
-            <option value="spread-flip">Spread - Flip</option>
-            <option value="bunch">Bunch Back</option>
-            <option value="bunch-flip">Bunch Back - Flip</option>
-            <option value="stack">Stack</option>
-            <option value="stack-flip">Stack - Flip</option>
-          </select>
+          <select id="align" onchange="applyAlign()"></select>
+          <button class="btn ghost" style="margin-top:7px;font-size:11px;padding:7px" onclick="saveAlign()">＋ 현재 배치 → 내 얼라인</button>
+          <div id="alignManage" style="margin-top:6px"></div>
         </div>
         <div class="group">
           <div class="lbl">선택: <span id="selName" style="color:#fff">—</span></div>
-          <select id="preset" onchange="applyPreset()">
-            <option value="">프리셋 라우트…</option>
-            <option value="go">go (직선 딥)</option>
-            <option value="slant">slant (안쪽 사선)</option>
-            <option value="out">out (바깥 컷)</option>
-            <option value="in">in (안쪽 컷)</option>
-            <option value="cross">cross (크로스)</option>
-            <option value="curl">curl (컬)</option>
-            <option value="comeback">comeback (컴백)</option>
-            <option value="corner">corner (코너)</option>
-            <option value="post">post (포스트)</option>
-            <option value="skinny-post">skinny post</option>
-            <option value="flat">flat (플랫)</option>
-            <option value="hitch">hitch (히치)</option>
-          </select>
+          <select id="preset" onchange="applyPreset()"></select>
+          <button class="btn ghost" style="margin-top:7px;font-size:11px;padding:7px" onclick="saveRoute()">＋ 이 라우트 저장</button>
+          <div id="routeManage" style="margin-top:6px"></div>
         </div>
         <button class="btn green" onclick="play()">▶ 재생</button>
         <button class="btn ghost" onclick="clearRoutes()">라우트 지우기</button>
@@ -216,9 +198,45 @@ const ALIGN={
   stack:{X:[250,492],Y:[290,492],C:[340,462],Z:[440,492],QB:[340,560]},
   "stack-flip":{Z:[250,492],C:[340,462],Y:[400,492],X:[440,492],QB:[340,560]}
 };
+/* ---------- 커스텀 얼라인 / 라우트 (사용자 제작) ---------- */
+const ALIGN_BUILTIN=[["spread","Spread (기본)"],["spread-flip","Spread - Flip"],["bunch","Bunch Back"],["bunch-flip","Bunch Back - Flip"],["stack","Stack"],["stack-flip","Stack - Flip"]];
+const PRESET_BUILTIN=[["go","go (직선 딥)"],["slant","slant (안쪽 사선)"],["out","out (바깥 컷)"],["in","in (안쪽 컷)"],["cross","cross (크로스)"],["curl","curl (컬)"],["comeback","comeback (컴백)"],["corner","corner (코너)"],["post","post (포스트)"],["skinny-post","skinny post"],["flat","flat (플랫)"],["hitch","hitch (히치)"]];
+const AKEY="flagAligns", RKEY="flagRoutes";
+const customAligns=()=>loadLS(AKEY,{});
+const customRoutes=()=>loadLS(RKEY,{});
+function refreshAlignOptions(){
+  const ca=customAligns(), ck=Object.keys(ca);
+  let h=`<option value="">선택…</option>`+ALIGN_BUILTIN.map(([v,l])=>`<option value="${v}">${l}</option>`).join("");
+  if(ck.length) h+=`<optgroup label="내 얼라인">`+ck.map(n=>`<option value="my:${n}">★ ${n}</option>`).join("")+`</optgroup>`;
+  document.getElementById("align").innerHTML=h;
+  document.getElementById("alignManage").innerHTML=ck.map(n=>`<div class="slot"><b>${n}</b><button onclick="delAlign('${n}')">✕</button></div>`).join("");
+}
+function refreshPresetOptions(){
+  const cr=customRoutes(), ck=Object.keys(cr);
+  let h=`<option value="">프리셋 라우트…</option>`+PRESET_BUILTIN.map(([v,l])=>`<option value="${v}">${l}</option>`).join("");
+  if(ck.length) h+=`<optgroup label="내 라우트">`+ck.map(n=>`<option value="route:${n}">★ ${n}</option>`).join("")+`</optgroup>`;
+  document.getElementById("preset").innerHTML=h;
+  document.getElementById("routeManage").innerHTML=ck.map(n=>`<div class="slot"><b>${n}</b><button onclick="delRoute('${n}')">✕</button></div>`).join("");
+}
+function saveAlign(){
+  const nm=(prompt("얼라인 이름 (예: Trips Right, Empty)")||"").trim(); if(!nm)return;
+  const a={}; for(const id in P) a[id]=[Math.round(P[id].x),Math.round(P[id].y)];
+  const s=customAligns(); s[nm]=a; saveLS(AKEY,s); refreshAlignOptions(); alert("얼라인 저장됨: "+nm);
+}
+function delAlign(n){const s=customAligns();delete s[n];saveLS(AKEY,s);refreshAlignOptions();}
+function saveRoute(){
+  if(!selected||P[selected].route.length<2){alert("라우트가 있는 선수를 선택하세요.\n(그리기 또는 프리셋으로 라우트를 먼저 만든 뒤 저장)");return;}
+  const nm=(prompt("라우트 이름 (예: deep-corner, smoke)")||"").trim(); if(!nm)return;
+  const r=P[selected].route, o=r[0];
+  const off=r.map(p=>({dx:Math.round(p.x-o.x),dy:Math.round(p.y-o.y)}));
+  const s=customRoutes(); s[nm]=off; saveLS(RKEY,s); refreshPresetOptions(); alert("라우트 저장됨: "+nm+"\n이제 어떤 선수든 선택해 프리셋 목록의 '★ "+nm+"'으로 적용할 수 있어요.");
+}
+function delRoute(n){const s=customRoutes();delete s[n];saveLS(RKEY,s);refreshPresetOptions();}
+
 function applyAlign(){
   const n=document.getElementById("align").value; if(!n)return;
-  const a=ALIGN[n];
+  const a = n.startsWith("my:") ? customAligns()[n.slice(3)] : ALIGN[n];
+  if(!a)return;
   for(const id in a){ P[id].x=a[id][0]; P[id].y=a[id][1]; P[id].route=[]; P[id].preset=""; }
   selected=null; render();
 }
@@ -274,7 +292,13 @@ board.addEventListener("pointerdown",e=>{if(e.target===board){selected=null;rend
 /* ---------- 프리셋 ---------- */
 function applyPreset(){ if(!selected){alert("선수를 먼저 클릭하세요.");return;}
   const n=document.getElementById("preset").value; if(!n)return;
-  const p=P[selected], out=side(selected)==="L"?-1:1, inn=-out, sx=p.x, sy=p.y;
+  const p=P[selected], sx=p.x, sy=p.y;
+  if(n.startsWith("route:")){                       // 내가 저장한 라우트
+    const off=customRoutes()[n.slice(6)]; if(!off)return;
+    p.route=off.map(o=>({x:Math.max(20,Math.min(600,sx+o.dx)),y:Math.max(20,Math.min(700,sy+o.dy))}));
+    p.preset=n.slice(6); render(); return;
+  }
+  const out=side(selected)==="L"?-1:1, inn=-out;
   const tbl={go:[[0,0],[0,-230]],slant:[[0,0],[inn*70,-110]],out:[[0,0],[0,-100],[out*100,-100]],
     in:[[0,0],[0,-100],[inn*120,-100]],cross:[[0,0],[0,-40],[inn*190,-80]],curl:[[0,0],[0,-150],[out*25,-120]],
     comeback:[[0,0],[0,-160],[out*35,-130]],corner:[[0,0],[0,-120],[out*95,-95]],post:[[0,0],[0,-120],[inn*95,-95]],
@@ -413,6 +437,7 @@ function showView(v){document.querySelectorAll(".view").forEach(s=>s.classList.t
 (function(){const c=pb("","Cross",{X:[150,LOS,[[150,LOS],[165,445],[300,455]]],Y:[250,LOS,[[250,LOS],[235,445],[120,452]]],
   C:[340,460,[[340,460],[340,395],[425,392]],"s"],Z:[470,LOS,[[470,LOS],[470,225]]],QB:[330,560,[[330,560],[370,545],[405,520]]]});
   P=c.P;})();
+refreshAlignOptions();refreshPresetOptions();
 render();renderSlots();
 </script>
 </body>
