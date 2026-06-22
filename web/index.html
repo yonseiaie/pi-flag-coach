@@ -120,6 +120,7 @@
           <select id="align" onchange="applyAlign()">
             <option value="">선택…</option>
             <option value="spread">Spread (기본)</option>
+            <option value="spread-flip">Spread - Flip</option>
             <option value="bunch">Bunch Back</option>
             <option value="bunch-flip">Bunch Back - Flip</option>
             <option value="stack">Stack</option>
@@ -209,6 +210,7 @@ let P=P0();
 /* ---------- 얼라인 (포메이션) ---------- */
 const ALIGN={
   spread:{X:[150,LOS],Y:[250,LOS],C:[340,460],Z:[470,LOS],QB:[330,560]},
+  "spread-flip":{Z:[210,LOS],C:[340,460],Y:[430,LOS],X:[530,LOS],QB:[350,560]},
   bunch:{Y:[308,470],C:[340,462],Z:[372,470],X:[312,548],QB:[348,548]},
   "bunch-flip":{Z:[308,470],C:[340,462],Y:[372,470],QB:[312,548],X:[348,548]},
   stack:{X:[250,492],Y:[290,492],C:[340,462],Z:[440,492],QB:[340,560]},
@@ -332,6 +334,7 @@ const PLAYBOOK=[
     C:[345,460,[],"s"],Z:[430,455,[[430,455],[330,460],[420,418]]],QB:[320,490,[[320,490],[250,490]]]}),
   pb("28","X motion Corner",{X:[150,475,[[150,475],[205,470],[212,432],[150,402]]],Y:[212,455,[[212,455],[212,380],[160,360]]],
     C:[340,470,[[340,470],[340,360]],"s"],Z:[400,470,[[400,470],[400,420],[396,432]]],QB:[330,505,[]]}),
+  pbFromAlign("Spread - Flip","spread-flip"),
   pbFromAlign("Bunch Back","bunch"),
   pbFromAlign("Stack","stack"),
   pbFromAlign("Stack - Flip","stack-flip"),
