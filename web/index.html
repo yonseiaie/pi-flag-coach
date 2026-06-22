@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FLAG COACH — 작전 보드</title>
+<style>
+  :root{
+    --bg:#0c0d11; --panel:#16181f; --panel2:#1b1e27; --line:#262a35;
+    --txt:#e7e9ee; --muted:#8b90a2; --accent:#3b82f6; --accent2:#2563eb;
+    --X:#f97316; --Y:#a855f7; --Z:#14b8a6; --C:#6b7280; --QB:#dc2626;
+    --green:#34d399;
+    --font:"Inter","Pretendard",system-ui,"Apple SD Gothic Neo",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);font-family:var(--font);font-size:14px;height:100vh;overflow:hidden}
+  .app{display:grid;grid-template-columns:180px 1fr;height:100vh}
+  .side{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:18px 14px}
+  .logo{font-weight:800;font-size:19px;letter-spacing:.5px;margin-bottom:24px}
+  .logo b{color:var(--accent)} .logo span{display:block;font-size:9px;letter-spacing:3px;color:var(--muted);font-weight:600}
+  .nav a{display:flex;gap:9px;align-items:center;padding:9px 11px;border-radius:9px;color:var(--muted);font-weight:600;font-size:13px;cursor:pointer}
+  .nav a.on,.nav a:hover{background:var(--panel2);color:var(--txt)}
+  .dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.55}
+  .tip{margin-top:auto;background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:12px;font-size:11px;color:var(--muted);line-height:1.7}
+  .tip b{color:var(--txt)}
+
+  .view{height:100vh;overflow:auto;padding:16px 18px;display:none}
+  .view.on{display:flex;flex-direction:column}
+  .vhead{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  h2{font-size:20px;font-weight:800}
+
+  /* board */
+  .play-name{background:transparent;border:0;border-bottom:1px dashed var(--line);color:var(--txt);font-size:20px;font-weight:800;padding:2px 4px;font-family:var(--font);width:240px}
+  .play-name:focus{outline:0;border-bottom-color:var(--accent)}
+  .pill{margin-left:auto;font-size:11px;color:var(--muted);background:var(--panel2);border:1px solid var(--line);padding:5px 10px;border-radius:20px}
+  .stage{flex:1;display:grid;grid-template-columns:1fr 150px 300px;gap:14px;min-height:0}
+  .boardwrap{background:#0f1722;border:1px solid var(--line);border-radius:14px;overflow:hidden;min-width:0}
+  svg{width:100%;height:100%;display:block;touch-action:none}
+  .toolcol{display:flex;flex-direction:column;gap:8px;overflow:auto}
+  .tool{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-weight:700;font-size:12.5px;cursor:pointer;color:var(--txt)}
+  .tool.on{border-color:var(--accent);background:#15233f;color:#cfe0ff}
+  .tool small{color:var(--muted);font-weight:500}
+  .group{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px}
+  .group .lbl{font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+  select,.mini{width:100%;background:#11141b;border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:8px;font-family:var(--font);font-size:12.5px}
+  .btn{width:100%;border:0;border-radius:9px;padding:10px;font-weight:800;font-size:13px;cursor:pointer;font-family:var(--font)}
+  .btn.primary{background:var(--accent);color:#fff} .btn.primary:hover{background:var(--accent2)}
+  .btn.green{background:var(--green);color:#06281c}
+  .btn.ghost{background:var(--panel2);border:1px solid var(--line);color:var(--txt)}
+  .row{display:flex;gap:7px}
+  .rightcol{overflow:auto;display:flex;flex-direction:column;gap:14px}
+  .h{font-weight:800;font-size:14px;margin-bottom:8px}
+  .role{display:flex;gap:10px;align-items:flex-start;margin-bottom:9px;cursor:pointer;border-radius:8px;padding:4px;border:1px solid transparent}
+  .role:hover{border-color:var(--line)} .role.sel{border-color:var(--accent);background:#13203a}
+  .badge{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;color:#fff;flex:0 0 auto}
+  .badge.sq{border-radius:6px}
+  .role .t{font-weight:700;font-size:12px} .role .d{font-size:10.5px;color:var(--muted);margin-top:1px}
+  .role .rt{font-size:10px;color:var(--accent);font-weight:700;margin-top:2px}
+  .desc{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:11px;font-size:12px;line-height:1.7;color:#cdd2de;white-space:pre-wrap;min-height:50px}
+  .ai{background:#0f2018;border:1px solid #1f4d36;border-radius:11px;padding:11px;font-size:12px;line-height:1.6;color:#cfe9da;white-space:pre-wrap;min-height:36px}
+  .ai.empty{background:var(--panel2);border-color:var(--line);color:var(--muted)}
+  .slot{display:flex;gap:6px;align-items:center;font-size:12px;padding:6px 8px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;margin-bottom:6px}
+  .slot b{flex:1} .slot button{background:transparent;border:0;color:var(--muted);cursor:pointer;font-weight:700} .slot button:hover{color:var(--txt)}
+
+  /* playbook grid */
+  .pbgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+  .card{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer}
+  .card:hover{border-color:var(--accent)}
+  .card .num{font-size:11px;color:var(--accent);font-weight:800}
+  .card .ttl{font-weight:800;font-size:15px;margin:2px 0 8px}
+  .card .mini-field{background:#0f1722;border-radius:8px;height:120px;border:1px solid var(--line)}
+
+  /* tables */
+  table{border-collapse:collapse;width:100%;font-size:12.5px;margin-bottom:18px}
+  th,td{border:1px solid var(--line);padding:0}
+  th{background:#1d3a6e;color:#fff;font-weight:700;padding:7px 6px}
+  th.def{background:#5a2d2d}
+  td input{width:100%;background:transparent;border:0;color:var(--txt);padding:7px 8px;font-family:var(--font);font-size:12.5px;text-align:center}
+  td input:focus{outline:0;background:#1d2330}
+  td.rowlab{background:var(--panel2);color:var(--muted);font-weight:700;padding:7px 10px;text-align:center;white-space:nowrap}
+  .sec-ttl{font-weight:800;margin:6px 0 8px;font-size:14px}
+  .toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+  .toolbar .btn{width:auto;padding:9px 14px}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="logo"><b>FL</b>AG<span>FOOTBALL</span></div>
+    <nav class="nav">
+      <a class="on" data-v="board" onclick="showView('board')"><span class="dot"></span>작전 보드</a>
+      <a data-v="playbook" onclick="showView('playbook')"><span class="dot"></span>플레이북</a>
+      <a data-v="roster" onclick="showView('roster')"><span class="dot"></span>선수 관리</a>
+      <a data-v="training" onclick="showView('training')"><span class="dot"></span>훈련 계획</a>
+    </nav>
+    <div class="tip">
+      <b>작전 보드 사용법</b><br>
+      • <b>얼라인</b>으로 포메이션 선택<br>
+      • <b>그리기</b>: 선수에서 끌어 라우트<br>
+      • 선수 클릭 → <b>프리셋</b> 라우트<br>
+      • <b>이동</b>: 선수 드래그 배치<br>
+      • <b>▶재생</b>으로 움직임 확인
+    </div>
+  </aside>
+
+  <!-- ===== BOARD ===== -->
+  <section class="view on" id="view-board">
+    <div class="vhead">
+      <input class="play-name" id="playName" value="Cross"/>
+      <div class="pill">5인 · 플래그풋볼</div>
+    </div>
+    <div class="stage">
+      <div class="boardwrap"><svg id="board" viewBox="0 0 620 720" preserveAspectRatio="xMidYMid meet"></svg></div>
+      <div class="toolcol">
+        <div class="tool on" data-mode="draw" onclick="setMode('draw')">✏️ 그리기 <small>라우트</small></div>
+        <div class="tool" data-mode="move" onclick="setMode('move')">✥ 이동 <small>선수 배치</small></div>
+        <div class="tool" data-mode="erase" onclick="setMode('erase')">⌫ 지우기 <small>라우트</small></div>
+        <div class="group">
+          <div class="lbl">얼라인 (포메이션)</div>
+          <select id="align" onchange="applyAlign()">
+            <option value="">선택…</option>
+            <option value="spread">Spread (기본)</option>
+            <option value="bunch">Bunch Back</option>
+            <option value="bunch-flip">Bunch Back - Flip</option>
+            <option value="stack">Stack</option>
+            <option value="stack-flip">Stack - Flip</option>
+          </select>
+        </div>
+        <div class="group">
+          <div class="lbl">선택: <span id="selName" style="color:#fff">—</span></div>
+          <select id="preset" onchange="applyPreset()">
+            <option value="">프리셋 라우트…</option>
+            <option value="go">go (직선 딥)</option>
+            <option value="slant">slant (안쪽 사선)</option>
+            <option value="out">out (바깥 컷)</option>
+            <option value="in">in (안쪽 컷)</option>
+            <option value="cross">cross (크로스)</option>
+            <option value="curl">curl (컬)</option>
+            <option value="comeback">comeback (컴백)</option>
+            <option value="corner">corner (코너)</option>
+            <option value="post">post (포스트)</option>
+            <option value="skinny-post">skinny post</option>
+            <option value="flat">flat (플랫)</option>
+            <option value="hitch">hitch (히치)</option>
+          </select>
+        </div>
+        <button class="btn green" onclick="play()">▶ 재생</button>
+        <button class="btn ghost" onclick="clearRoutes()">라우트 지우기</button>
+        <button class="btn ghost" onclick="addToPlaybook()">＋ 플레이북에 추가</button>
+      </div>
+      <div class="rightcol">
+        <div><div class="h">수행 역할</div><div id="roles"></div></div>
+        <div><div class="h">작전 설명 <span style="color:var(--muted);font-weight:600;font-size:11px">(자동)</span></div><div class="desc" id="desc">—</div></div>
+        <div><div class="h">Pi 분석 / 평가</div>
+          <button class="btn primary" onclick="analyze()">🤖 이 작전 분석시키기</button>
+          <div class="ai empty" id="ai" style="margin-top:9px">분석 버튼을 누르면 Pi(또는 데모)가 평가합니다.</div></div>
+        <div><div class="h">저장 / 불러오기</div>
+          <div class="row"><input class="mini" id="saveName" placeholder="이름"/><button class="btn primary" style="width:auto;padding:8px 12px" onclick="savePlay()">저장</button></div>
+          <div id="slots" style="margin-top:9px"></div>
+          <div class="row" style="margin-top:6px"><button class="btn ghost" onclick="exportPlay()">JSON 내보내기</button><button class="btn ghost" onclick="document.getElementById('imp').click()">파일 불러오기</button>
+          <input type="file" id="imp" accept="application/json" style="display:none" onchange="importPlay(event)"/></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PLAYBOOK ===== -->
+  <section class="view" id="view-playbook">
+    <div class="vhead"><h2>플레이북</h2><div class="pill">클릭하면 보드로 불러옵니다</div></div>
+    <div class="pbgrid" id="pbgrid"></div>
+  </section>
+
+  <!-- ===== ROSTER ===== -->
+  <section class="view" id="view-roster">
+    <div class="vhead"><h2>선수 관리 — 경기별 라인업</h2></div>
+    <div class="toolbar"><button class="btn primary" onclick="saveRoster()">저장</button><button class="btn ghost" onclick="exportJSON(ROSTER,'roster.json')">JSON 내보내기</button><button class="btn ghost" onclick="resetRoster()">기본값 복원</button></div>
+    <div id="rosterWrap"></div>
+  </section>
+
+  <!-- ===== TRAINING ===== -->
+  <section class="view" id="view-training">
+    <div class="vhead"><h2>훈련 계획</h2></div>
+    <div class="toolbar"><button class="btn primary" onclick="saveTraining()">저장</button><button class="btn ghost" onclick="addTrainingRow()">＋ 행 추가</button><button class="btn ghost" onclick="exportJSON(TRAIN,'practice-schedule.json')">JSON 내보내기</button><button class="btn ghost" onclick="resetTraining()">기본값 복원</button></div>
+    <input class="mini" id="trainTitle" style="max-width:480px;margin-bottom:12px;font-weight:700"/>
+    <div id="trainWrap"></div>
+  </section>
+</div>
+
+<script>
+const SVG_NS="http://www.w3.org/2000/svg";
+const board=document.getElementById("board");
+const LOS=470, PX=13;
+let mode="draw", selected=null, drawing=null, animating=false;
+
+const ROLE={
+  X:{role:"외곽 와이드 리시버",hint:"주 타깃 · 딥/아웃"},
+  Y:{role:"슬롯/인사이드",hint:"크로스·인 루트"},
+  Z:{role:"반대편 와이드",hint:"1:1 · 컴백/딥"},
+  C:{role:"센터",hint:"스냅 후 블록/릴리스"},
+  QB:{role:"쿼터백",hint:"스냅·리드 후 패스"}
+};
+function P0(){return{
+  X:{x:150,y:LOS,color:"--X",shape:"c",route:[],preset:""},
+  Y:{x:250,y:LOS,color:"--Y",shape:"c",route:[],preset:""},
+  C:{x:340,y:460,color:"--C",shape:"s",route:[],preset:""},
+  Z:{x:470,y:LOS,color:"--Z",shape:"c",route:[],preset:""},
+  QB:{x:330,y:560,color:"--QB",shape:"c",route:[],preset:""}};}
+let P=P0();
+
+/* ---------- 얼라인 (포메이션) ---------- */
+const ALIGN={
+  spread:{X:[150,LOS],Y:[250,LOS],C:[340,460],Z:[470,LOS],QB:[330,560]},
+  bunch:{Y:[308,470],C:[340,462],Z:[372,470],X:[312,548],QB:[348,548]},
+  "bunch-flip":{Z:[308,470],C:[340,462],Y:[372,470],QB:[312,548],X:[348,548]},
+  stack:{X:[250,492],Y:[290,492],C:[340,462],Z:[440,492],QB:[340,560]},
+  "stack-flip":{Z:[250,492],C:[340,462],Y:[400,492],X:[440,492],QB:[340,560]}
+};
+function applyAlign(){
+  const n=document.getElementById("align").value; if(!n)return;
+  const a=ALIGN[n];
+  for(const id in a){ P[id].x=a[id][0]; P[id].y=a[id][1]; P[id].route=[]; P[id].preset=""; }
+  selected=null; render();
+}
+
+function side(id){ return (id==="Z")?"R":(id==="QB"||id==="C")?"R":"L"; }
+function colorOf(id){ return getComputedStyle(document.documentElement).getPropertyValue(P[id].color).trim(); }
+function toSvg(evt){ const pt=board.createSVGPoint();pt.x=evt.clientX;pt.y=evt.clientY;
+  const r=pt.matrixTransform(board.getScreenCTM().inverse());
+  return {x:Math.max(20,Math.min(600,r.x)),y:Math.max(20,Math.min(700,r.y))}; }
+
+/* ---------- 렌더 ---------- */
+function render(){
+  board.innerHTML="";
+  const g=document.createElementNS(SVG_NS,"g");g.setAttribute("stroke","#1f2a3a");g.setAttribute("stroke-width","1");
+  for(let y=110;y<=670;y+=80) g.appendChild(line(20,y,600,y)); board.appendChild(g);
+  board.appendChild(line(20,LOS,600,LOS,"#d97706",1.4,"6 5"));
+  const ez=document.createElementNS(SVG_NS,"text");ez.setAttribute("x","300");ez.setAttribute("y","58");
+  ez.setAttribute("fill","#33415a");ez.setAttribute("font-size","12");ez.setAttribute("text-anchor","middle");ez.setAttribute("font-weight","800");
+  ez.textContent="↑ 공격 방향"; board.appendChild(ez);
+  for(const id in P){ const r=P[id].route; if(r.length>1){
+    board.appendChild(arrowMarker(id,colorOf(id)));
+    const path=document.createElementNS(SVG_NS,"path");path.setAttribute("d",routeD(r));path.setAttribute("fill","none");
+    path.setAttribute("stroke",colorOf(id));path.setAttribute("stroke-width","4");path.setAttribute("stroke-linecap","round");path.setAttribute("stroke-linejoin","round");
+    path.setAttribute("marker-end","url(#arrow-"+id+")"); board.appendChild(path);
+  }}
+  for(const id in P){ const pl=P[id]; const grp=document.createElementNS(SVG_NS,"g"); grp.style.cursor=mode==="move"?"grab":"pointer";
+    let s; if(pl.shape==="s"){s=document.createElementNS(SVG_NS,"rect");s.setAttribute("x",pl.x-15);s.setAttribute("y",pl.y-15);s.setAttribute("width",30);s.setAttribute("height",30);s.setAttribute("rx",6);}
+    else{s=document.createElementNS(SVG_NS,"circle");s.setAttribute("cx",pl.x);s.setAttribute("cy",pl.y);s.setAttribute("r",17);}
+    s.setAttribute("fill",colorOf(id)); if(selected===id){s.setAttribute("stroke","#fff");s.setAttribute("stroke-width","2.5");}
+    const t=document.createElementNS(SVG_NS,"text");t.setAttribute("x",pl.x);t.setAttribute("y",pl.y+5);t.setAttribute("text-anchor","middle");t.setAttribute("fill","#fff");t.setAttribute("font-size","12");t.setAttribute("font-weight","800");t.textContent=id;t.style.pointerEvents="none";
+    grp.appendChild(s);grp.appendChild(t);grp.addEventListener("pointerdown",e=>onDown(e,id));board.appendChild(grp);}
+  document.getElementById("selName").textContent=selected||"—";
+  renderRoles();renderDesc();
+}
+function line(x1,y1,x2,y2,st,w,d){const l=document.createElementNS(SVG_NS,"line");l.setAttribute("x1",x1);l.setAttribute("y1",y1);l.setAttribute("x2",x2);l.setAttribute("y2",y2);if(st)l.setAttribute("stroke",st);if(w)l.setAttribute("stroke-width",w);if(d)l.setAttribute("stroke-dasharray",d);return l;}
+function routeD(r){return r.map((p,i)=>(i?"L":"M")+p.x+" "+p.y).join(" ");}
+function arrowMarker(id,c){const m=document.createElementNS(SVG_NS,"marker");m.setAttribute("id","arrow-"+id);m.setAttribute("markerWidth","6");m.setAttribute("markerHeight","6");m.setAttribute("refX","4");m.setAttribute("refY","3");m.setAttribute("orient","auto");const p=document.createElementNS(SVG_NS,"path");p.setAttribute("d","M0,0 L6,3 L0,6 Z");p.setAttribute("fill",c);m.appendChild(p);const d=document.createElementNS(SVG_NS,"defs");d.appendChild(m);return d;}
+
+/* ---------- 상호작용 ---------- */
+function setMode(m){mode=m;document.querySelectorAll(".tool").forEach(t=>t.classList.toggle("on",t.dataset.mode===m));render();}
+function onDown(e,id){e.stopPropagation();selected=id;
+  if(mode==="erase"){P[id].route=[];P[id].preset="";render();return;}
+  if(mode==="draw"){drawing={id,pts:[{x:P[id].x,y:P[id].y}]};board.setPointerCapture(e.pointerId);}
+  else if(mode==="move"){drawing={id,moving:true};board.setPointerCapture(e.pointerId);}
+  render();}
+board.addEventListener("pointermove",e=>{ if(!drawing)return; const pos=toSvg(e);
+  if(drawing.moving){const dx=pos.x-P[drawing.id].x,dy=pos.y-P[drawing.id].y;P[drawing.id].x=pos.x;P[drawing.id].y=pos.y;
+    if(P[drawing.id].route.length)P[drawing.id].route=P[drawing.id].route.map(p=>({x:p.x+dx,y:p.y+dy}));render();}
+  else{const last=drawing.pts[drawing.pts.length-1]; if(Math.hypot(pos.x-last.x,pos.y-last.y)>8){drawing.pts.push(pos);P[drawing.id].route=drawing.pts.slice();P[drawing.id].preset="custom";render();}}});
+board.addEventListener("pointerup",()=>drawing=null);
+board.addEventListener("pointerdown",e=>{if(e.target===board){selected=null;render();}});
+
+/* ---------- 프리셋 ---------- */
+function applyPreset(){ if(!selected){alert("선수를 먼저 클릭하세요.");return;}
+  const n=document.getElementById("preset").value; if(!n)return;
+  const p=P[selected], out=side(selected)==="L"?-1:1, inn=-out, sx=p.x, sy=p.y;
+  const tbl={go:[[0,0],[0,-230]],slant:[[0,0],[inn*70,-110]],out:[[0,0],[0,-100],[out*100,-100]],
+    in:[[0,0],[0,-100],[inn*120,-100]],cross:[[0,0],[0,-40],[inn*190,-80]],curl:[[0,0],[0,-150],[out*25,-120]],
+    comeback:[[0,0],[0,-160],[out*35,-130]],corner:[[0,0],[0,-120],[out*95,-95]],post:[[0,0],[0,-120],[inn*95,-95]],
+    "skinny-post":[[0,0],[0,-130],[inn*45,-115]],flat:[[0,0],[out*110,-25]],hitch:[[0,0],[0,-85],[0,-70]]};
+  p.route=tbl[n].map(([dx,dy])=>({x:Math.max(20,Math.min(600,sx+dx)),y:Math.max(20,Math.min(700,sy+dy))}));
+  p.preset=n; render();
+}
+
+/* ---------- 재생 ---------- */
+function play(){ if(animating)return; animating=true; const DUR=1500,t0=performance.now(),tk={};
+  for(const id in P) if(P[id].route.length>1){const c=document.createElementNS(SVG_NS,"circle");c.setAttribute("r","9");c.setAttribute("fill",colorOf(id));c.setAttribute("stroke","#fff");c.setAttribute("stroke-width","2");board.appendChild(c);tk[id]=c;}
+  (function fr(now){const k=Math.min(1,(now-t0)/DUR);for(const id in tk){const p=along(P[id].route,k);tk[id].setAttribute("cx",p.x);tk[id].setAttribute("cy",p.y);}
+    if(k<1)requestAnimationFrame(fr);else setTimeout(()=>{for(const id in tk)tk[id].remove();animating=false;},400);})(t0);}
+function along(r,k){let tot=0,s=[];for(let i=1;i<r.length;i++){const d=Math.hypot(r[i].x-r[i-1].x,r[i].y-r[i-1].y);s.push(d);tot+=d;}let dist=k*tot;
+  for(let i=0;i<s.length;i++){if(dist<=s[i]||i===s.length-1){const f=s[i]?dist/s[i]:0;return{x:r[i].x+(r[i+1].x-r[i].x)*f,y:r[i].y+(r[i+1].y-r[i].y)*f};}dist-=s[i];}return r[r.length-1];}
+
+/* ---------- 우측 패널 ---------- */
+function renderRoles(){document.getElementById("roles").innerHTML=Object.keys(P).map(id=>{const r=ROLE[id],pl=P[id],rt=pl.preset&&pl.preset!=="custom"?pl.preset:(pl.route.length>1?"커스텀":"—");
+  return `<div class="role ${selected===id?"sel":""}" onclick="selPanel('${id}')"><div class="badge ${pl.shape==="s"?"sq":""}" style="background:${colorOf(id)}">${id}</div><div><div class="t">${id} · ${r.role}</div><div class="d">${r.hint}</div><div class="rt">라우트: ${rt}</div></div></div>`;}).join("");}
+function selPanel(id){selected=id;render();}
+function yds(r){let t=0;for(let i=1;i<r.length;i++)t+=Math.hypot(r[i].x-r[i-1].x,r[i].y-r[i-1].y);return Math.round(t/PX);}
+function renderDesc(){const l=Object.keys(P).filter(id=>P[id].route.length>1).map(id=>{const pl=P[id],n=pl.preset&&pl.preset!=="custom"?pl.preset:"커스텀",dir=pl.route[pl.route.length-1].x<pl.route[0].x?"왼쪽":"오른쪽";return `· ${id} (${ROLE[id].role}): ${n} — 약 ${yds(pl.route)}야드, ${dir} 전개`;});
+  document.getElementById("desc").textContent=l.length?`[${document.getElementById("playName").value}]\n`+l.join("\n"):"라우트를 그리면 설명이 자동 생성됩니다.";}
+
+/* ---------- Pi 분석 ---------- */
+function playJSON(){return{name:document.getElementById("playName").value,formation:document.getElementById("align").value||"SPREAD",
+  players:Object.keys(P).map(id=>({id,role:ROLE[id].role,x:Math.round(P[id].x),y:Math.round(P[id].y),preset:P[id].preset,routeYards:yds(P[id].route)}))};}
+async function analyze(){const ai=document.getElementById("ai");ai.classList.remove("empty");ai.textContent="분석 중…";const j=playJSON();
+  const msg="다음 플래그풋볼(5인) 작전을 코치 관점에서 분석/평가해줘. 강점, 약점(예상 수비 대응), 보완 1가지를 간단히. 데이터:\n"+JSON.stringify(j);
+  try{const r=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:msg})});if(!r.ok)throw 0;const d=await r.json();ai.textContent=d.reply;}
+  catch(e){ai.textContent=demoAI(j);}}
+function demoAI(j){const go=j.players.some(p=>/go|post|corner/.test(p.preset)),cr=j.players.some(p=>p.preset==="cross");
+  let s="[데모 분석] ";s+=cr&&go?"크로스로 미드 수비를 끌고 딥(go/post/corner)으로 뒤를 비우는 하이-로 조합. ":cr?"크로스 중심 미드 공략. ":"한쪽 전개 비중이 큽니다. ";
+  s+="\n강점: 수비 시선 분산.\n약점: QB 압박 시 딥 타이밍 흔들림.\n보완: 핫 루트(flat/hitch) 추가로 블리츠 대비.\n\n(브리지+API키 연결 시 실제 Pi가 분석)";return s;}
+
+/* ---------- 저장/불러오기 + 플레이북 ---------- */
+const KEY="flagPlays";
+const read=()=>{try{return JSON.parse(localStorage.getItem(KEY)||"{}");}catch(e){return{};}};
+const write=o=>{try{localStorage.setItem(KEY,JSON.stringify(o));return true;}catch(e){return false;}};
+const snap=()=>({name:document.getElementById("playName").value,P:JSON.parse(JSON.stringify(P))});
+function savePlay(){const nm=document.getElementById("saveName").value.trim()||document.getElementById("playName").value;const s=read();s[nm]=snap();
+  if(write(s)){document.getElementById("saveName").value="";renderSlots();}else alert("미리보기 환경은 저장 제한. 로컬에서 파일로 열면 저장됩니다.");}
+function renderSlots(){const s=read(),k=Object.keys(s);
+  document.getElementById("slots").innerHTML=k.length
+    ? k.map(n=>`<div class="slot"><b>${n}</b><button onclick="loadPlay('${n}')">불러오기</button><button onclick="delPlay('${n}')">✕</button></div>`).join("")
+    : `<div style="color:var(--muted);font-size:11.5px">저장된 작전 없음</div>`;}
+function loadPlay(n){const s=read()[n];if(!s)return;P=s.P;document.getElementById("playName").value=s.name||n;selected=null;showView('board');render();}
+function delPlay(n){const s=read();delete s[n];write(s);renderSlots();}
+function exportPlay(){dl(JSON.stringify(snap(),null,2),(document.getElementById("playName").value||"play")+".json");}
+function importPlay(e){const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const s=JSON.parse(rd.result);P=s.P;document.getElementById("playName").value=s.name||"불러온 작전";selected=null;render();}catch(x){alert("올바른 파일이 아닙니다.");}};rd.readAsText(f);}
+function clearRoutes(){for(const id in P){P[id].route=[];P[id].preset="";}render();}
+function addToPlaybook(){PLAYBOOK.push({num:"★",name:document.getElementById("playName").value,P:JSON.parse(JSON.stringify(P))});renderPlaybook();alert("플레이북에 추가됨");}
+
+/* ---------- 플레이북 (실제 작전) ---------- */
+const PLAYBOOK=[
+  pb("11","X QB Pitch",{X:[230,460,[[230,460],[170,455],[70,415]]],Y:[290,455,[[290,455],[300,430],[430,420]]],
+    C:[345,460,[],"s"],Z:[430,455,[[430,455],[330,460],[420,418]]],QB:[320,490,[[320,490],[250,490]]]}),
+  pb("28","X motion Corner",{X:[150,475,[[150,475],[205,470],[212,432],[150,402]]],Y:[212,455,[[212,455],[212,380],[160,360]]],
+    C:[340,470,[[340,470],[340,360]],"s"],Z:[400,470,[[400,470],[400,420],[396,432]]],QB:[330,505,[]]}),
+  pbFromAlign("Bunch Back","bunch"),
+  pbFromAlign("Stack","stack"),
+  pbFromAlign("Stack - Flip","stack-flip"),
+  pbFromAlign("Bunch Back - Flip","bunch-flip"),
+];
+function pb(num,name,spec){const P={};for(const id in spec){const a=spec[id];P[id]={x:a[0],y:a[1],color:"--"+id,shape:a[3]||"c",
+  route:(a[2]||[]).map(([x,y])=>({x,y})),preset:""};}return{num,name,P};}
+function pbFromAlign(name,key){const a=ALIGN[key],P={};for(const id in a)P[id]={x:a[id][0],y:a[id][1],color:"--"+id,shape:id==="C"?"s":"c",route:[],preset:""};return{num:"얼라인",name,P};}
+function renderPlaybook(){document.getElementById("pbgrid").innerHTML=PLAYBOOK.map((p,i)=>`<div class="card" onclick="loadPB(${i})">
+  <div class="num">#${p.num}</div><div class="ttl">${p.name}</div><div class="mini-field" id="mf${i}"></div></div>`).join("");
+  PLAYBOOK.forEach((p,i)=>drawMini("mf"+i,p.P));}
+function loadPB(i){P=JSON.parse(JSON.stringify(PLAYBOOK[i].P));document.getElementById("playName").value=PLAYBOOK[i].name;selected=null;showView('board');render();}
+function drawMini(elId,Pd){const el=document.getElementById(elId);if(!el)return;
+  let s=`<svg viewBox="0 0 620 720" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%"><line x1="20" y1="${LOS}" x2="600" y2="${LOS}" stroke="#d97706" stroke-width="2" stroke-dasharray="6 5"/>`;
+  for(const id in Pd){const pl=Pd[id];const c=getComputedStyle(document.documentElement).getPropertyValue("--"+id).trim();
+    if(pl.route.length>1)s+=`<path d="${pl.route.map((q,j)=>(j?"L":"M")+q.x+" "+q.y).join(" ")}" fill="none" stroke="${c}" stroke-width="5"/>`;
+    s+=pl.shape==="s"?`<rect x="${pl.x-16}" y="${pl.y-16}" width="32" height="32" rx="6" fill="${c}"/>`:`<circle cx="${pl.x}" cy="${pl.y}" r="18" fill="${c}"/>`;
+    s+=`<text x="${pl.x}" y="${pl.y+6}" text-anchor="middle" fill="#fff" font-size="16" font-weight="800">${id}</text>`;}
+  el.innerHTML=s+"</svg>";}
+
+/* ---------- 선수 관리 (라인업) ---------- */
+const OFF=["X","Y","QB(Q)","C","Z"], DEF=["LCB","LS","LB","RS","RCB"];
+const ROSTER_DEFAULT={games:[
+  {title:"1경기 - 동탄 B 혼성",off:{전반:["안토니오","류상윤","김종호","권남주","정승훈"],후반:["남윤우","김이룸","알렉스","신재호","김민성"]},def:{전반:["홍승표","남윤우","임채현","알렉스","김이룸"],후반:["정승훈","김지혁","신재호","김현우","김지호"]}},
+  {title:"2경기 - 동탄 A",off:{전반:["안토니오","김지호","장준환","김종호","정승훈"],후반:["김현욱","류상윤","장준환","김기유","정승훈"]},def:{전반:["김기유","김현욱","류상윤","김지혁","전동주"],후반:["김기유","김현욱","김민성","김지혁","김지호"]}},
+  {title:"3경기 - 신입 혼성",off:{전반:["김지혁","김이룸","알렉스","홍승표","김민성"],후반:["안토니오","임채현","김종호","권남주","정승훈"]},def:{전반:["안토니오","장준환","임채현","김현우","김이룸"],후반:["홍승표","알렉스","류상윤","김현우","전동주"]}},
+  {title:"4경기 - 베이글스",off:{전반:["김현욱","김지호","장준환","김종호","정승훈"],후반:["남윤우","전동주","김종호","김기유","김민성"]},def:{전반:["김기유","김현욱","김민성","김현우","전동주"],후반:["안토니오","김현욱","신재호","김현우","전동주"]}}
+]};
+let ROSTER=loadLS("flagRoster",ROSTER_DEFAULT);
+function renderRoster(){let h="";ROSTER.games.forEach((g,gi)=>{h+=`<div class="sec-ttl">${g.title}</div>`;
+  h+=`<table><tr><th></th>`+OFF.map(p=>`<th>${p}</th>`).join("")+`</tr>`;
+  ["전반","후반"].forEach(half=>{h+=`<tr><td class="rowlab">${half} OFF</td>`+g.off[half].map((v,i)=>`<td><input value="${v}" oninput="ROSTER.games[${gi}].off['${half}'][${i}]=this.value"></td>`).join("")+`</tr>`;});
+  h+=`</table><table><tr><th class="def"></th>`+DEF.map(p=>`<th class="def">${p}</th>`).join("")+`</tr>`;
+  ["전반","후반"].forEach(half=>{h+=`<tr><td class="rowlab">${half} DEF</td>`+g.def[half].map((v,i)=>`<td><input value="${v}" oninput="ROSTER.games[${gi}].def['${half}'][${i}]=this.value"></td>`).join("")+`</tr>`;});
+  h+=`</table>`;});
+  document.getElementById("rosterWrap").innerHTML=h;}
+function saveRoster(){saveLS("flagRoster",ROSTER);alert("선수 명단 저장됨");}
+function resetRoster(){ROSTER=JSON.parse(JSON.stringify(ROSTER_DEFAULT));renderRoster();}
+
+/* ---------- 훈련 계획 ---------- */
+const TRAIN_DEFAULT={title:"2026 YONSEI EAGLES FLAG PRACTICE — 6/6(Sat) 8:30–11:00 / Spring #29",
+  rows:[
+    {time:"8:25",dur:"",act:"Huddle"},
+    {time:"8:30–8:45",dur:"15min",act:"Dynamic Stretching"},
+    {time:"8:45–8:50",dur:"",act:"Dynamic Catch"},
+    {time:"8:45–8:50",dur:"",act:"Water Break"},
+    {time:"8:50–9:50",dur:"60min",act:"Offense Play Practice"},
+    {time:"9:50–9:55",dur:"",act:"Water Break"},
+    {time:"9:55–10:55",dur:"60min",act:"Game (Eagles A vs Eagles B)"},
+    {time:"10:55–11:00",dur:"",act:"Stretching after work out"}
+  ]};
+let TRAIN=loadLS("flagTrain",TRAIN_DEFAULT);
+function renderTraining(){document.getElementById("trainTitle").value=TRAIN.title;
+  let h=`<table><tr><th style="width:140px">시간</th><th style="width:90px">소요</th><th>활동</th><th style="width:50px"></th></tr>`;
+  TRAIN.rows.forEach((r,i)=>{h+=`<tr>
+    <td><input value="${r.time}" oninput="TRAIN.rows[${i}].time=this.value"></td>
+    <td><input value="${r.dur}" oninput="TRAIN.rows[${i}].dur=this.value"></td>
+    <td><input value="${r.act}" oninput="TRAIN.rows[${i}].act=this.value" style="text-align:left"></td>
+    <td><input value="✕" readonly style="cursor:pointer;color:#8b90a2" onclick="delTrainingRow(${i})"></td></tr>`;});
+  document.getElementById("trainWrap").innerHTML=h+`</table>`;}
+function addTrainingRow(){TRAIN.rows.push({time:"",dur:"",act:""});renderTraining();}
+function delTrainingRow(i){TRAIN.rows.splice(i,1);renderTraining();}
+function saveTraining(){TRAIN.title=document.getElementById("trainTitle").value;saveLS("flagTrain",TRAIN);alert("훈련 계획 저장됨");}
+function resetTraining(){TRAIN=JSON.parse(JSON.stringify(TRAIN_DEFAULT));renderTraining();}
+
+/* ---------- 공통 ---------- */
+function loadLS(k,def){try{const v=localStorage.getItem(k);return v?JSON.parse(v):JSON.parse(JSON.stringify(def));}catch(e){return JSON.parse(JSON.stringify(def));}}
+function saveLS(k,o){try{localStorage.setItem(k,JSON.stringify(o));}catch(e){alert("이 미리보기는 저장이 제한됩니다. 로컬에서 파일로 열면 저장됩니다.");}}
+function dl(text,name){const b=new Blob([text],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;a.click();}
+function exportJSON(o,name){dl(JSON.stringify(o,null,2),name);}
+function showView(v){document.querySelectorAll(".view").forEach(s=>s.classList.toggle("on",s.id==="view-"+v));
+  document.querySelectorAll(".nav a").forEach(a=>a.classList.toggle("on",a.dataset.v===v));
+  if(v==="playbook")renderPlaybook(); if(v==="roster")renderRoster(); if(v==="training")renderTraining();}
+
+/* ---------- 시작: 예시 Cross ---------- */
+(function(){const c=pb("","Cross",{X:[150,LOS,[[150,LOS],[165,445],[300,455]]],Y:[250,LOS,[[250,LOS],[235,445],[120,452]]],
+  C:[340,460,[[340,460],[340,395],[425,392]],"s"],Z:[470,LOS,[[470,LOS],[470,225]]],QB:[330,560,[[330,560],[370,545],[405,520]]]});
+  P=c.P;})();
+render();renderSlots();
+</script>
+</body>
+</html>

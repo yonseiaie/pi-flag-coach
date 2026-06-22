@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "stats-db": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sqlite", "--db-path", "./data/flag.db"]
+    },
+    "team-store": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "./data"]
+    }
+  },
+
+  "_production_swap": {
+    "_comment": "실제 운영 시 stats-db 를 PostgreSQL 로 교체. 구조는 그대로 두고 서버 정의만 바꾸면 됨.",
+    "stats-db": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres", "postgresql://USER:PASS@localhost:5432/flag"]
+    }
+  }
+}

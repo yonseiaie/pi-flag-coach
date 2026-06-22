@@ -1,0 +1,14 @@
+{
+  "opponent": "라이벌즈",
+  "lastGames": [
+    { "date": "2024-05-04", "result": "L 10-21", "safetyDepth": 70, "flatCoverageSuccess": 51, "blitzFreq": 64 },
+    { "date": "2024-05-18", "result": "W 17-14", "safetyDepth": 73, "flatCoverageSuccess": 46, "blitzFreq": 70 },
+    { "date": "2024-05-25", "result": "L 7-28",  "safetyDepth": 73, "flatCoverageSuccess": 47, "blitzFreq": 70 }
+  ],
+  "aggregate": {
+    "safetyDepth": 72,
+    "flatCoverageSuccess": 48,
+    "blitzFreq": 68,
+    "_notes": "세이프티 깊이(%): 클수록 딥 존을 깊게 비움 → 딥 패스 기회. 플랫 수비 성공률(%): 낮을수록 플랫 루트 효과적. 블리츠 빈도(%): 높을수록 빠른 릴리스/핫 루트 필요."
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "formation": "SPREAD FLEX",
+  "plays": [
+    {
+      "id": "PLAY01", "name": "Mesh Switch", "type": "pass",
+      "desc": "X/F 미드필드 크로스 메시, Y 딥 클리어아웃. 블리츠 대응 핫 루트 내장.",
+      "bestAgainst": ["high-blitz", "man-coverage"],
+      "routes": {
+        "X": "drag-out", "F": "deep-cross", "Y": "go", "Z": "comeback", "H": "flat", "Q": "rollout"
+      }
+    },
+    { "id": "PLAY02", "name": "Stick N Nod", "type": "pass",
+      "desc": "Z 스틱 후 노드로 세이프티 속임. 짧은 미드 존 공략.",
+      "bestAgainst": ["zone-coverage"], "routes": {} },
+    { "id": "PLAY03", "name": "Double In", "type": "pass",
+      "desc": "X·Y 동시 인컷으로 미드필드 과부하.",
+      "bestAgainst": ["soft-flat"], "routes": {} },
+    { "id": "PLAY04", "name": "Bunch Cross", "type": "pass",
+      "desc": "번치 셋에서 교차 루트로 픽 유도.",
+      "bestAgainst": ["man-coverage"], "routes": {} },
+    { "id": "PLAY05", "name": "Redzone Fade", "type": "pass",
+      "desc": "레드존 코너 페이드. 1:1 매치업 활용.",
+      "bestAgainst": ["press-man"], "routes": {} }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "team": "Eagles",
+  "format": "5인제 플래그풋볼",
+  "players": [
+    { "id": "QB", "name": "김민준", "position": "쿼터백",        "role": "스냅·리드 후 패스, 필요시 롤아웃",
+      "stats": { "passYards": 1840, "completionPct": 67.2, "td": 22, "int": 5 } },
+    { "id": "C",  "name": "이도현", "position": "센터",          "role": "스냅 후 블로킹 또는 딜레이 릴리스",
+      "stats": { "snaps": 410, "blocks": 120, "recYards": 90, "td": 1 } },
+    { "id": "X",  "name": "박서준", "position": "외곽 와이드 리시버", "role": "주 타깃 · 딥/아웃 루트로 공간 창출",
+      "stats": { "recYards": 910, "receptions": 61, "td": 11, "drops": 4 } },
+    { "id": "Y",  "name": "최우진", "position": "슬롯/인사이드",   "role": "미드필드 크로스·인 루트, 수비 견제",
+      "stats": { "recYards": 720, "receptions": 54, "td": 8, "yac": 312 } },
+    { "id": "Z",  "name": "정하준", "position": "반대편 와이드",   "role": "1:1 매치업 · 컴백/딥",
+      "stats": { "recYards": 1040, "receptions": 48, "td": 13, "avgDepth": 18.4 } }
+  ]
+}
